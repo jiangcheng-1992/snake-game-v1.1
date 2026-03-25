@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>超级贪吃蛇 - 极简版</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="main-layout">
+        <!-- 游戏区域 -->
+        <div class="game-wrapper">
+            <div class="game-header">
+                <h1>超级贪吃蛇</h1>
+                <div class="stats">
+                    <div class="stat-item">
+                        <span class="label">分数</span>
+                        <span id="score" class="value">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="label">最高</span>
+                        <span id="highScore" class="value">0</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="canvas-container">
+                <canvas id="gameCanvas" width="400" height="400"></canvas>
+                
+                <!-- 昵称设置弹窗 -->
+                <div id="nicknameModal" class="modal">
+                    <div class="modal-content">
+                        <h2>👋 欢迎来到贪吃蛇</h2>
+                        <p>请输入你在飞书群的昵称，用于同步全网排行榜：</p>
+                        <div class="input-group">
+                            <input type="text" id="userNicknameInput" placeholder="输入昵称..." maxlength="10">
+                            <button id="saveNicknameBtn" class="primary-btn">进入游戏</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 游戏结束弹窗 -->
+                <div id="gameOverModal" class="modal hidden">
+                    <div class="modal-content">
+                        <h2>游戏结束</h2>
+                        <p>你的得分: <span id="finalScore">0</span></p>
+                        <div class="user-info" id="userInfoDisplay">
+                            正在同步飞书账号...
+                        </div>
+                        <div class="modal-actions">
+                            <button id="restartBtn" class="primary-btn">重新开始</button>
+                            <button id="shareBtn" class="secondary-btn">分享游戏</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="controls-hint">
+                <p>使用 <b>方向键</b> 或 <b>WASD</b> 控制移动</p>
+            </div>
+        </div>
+
+        <!-- 排行榜侧边栏 -->
+        <div class="leaderboard-sidebar">
+            <div class="sidebar-header">
+                <h2>🏆 全球排行榜</h2>
+                <p>(全网实时同步)</p>
+            </div>
+            <div class="leaderboard-list" id="leaderboardList">
+                <!-- 排行榜项将通过 JS 动态生成 -->
+                <div class="empty-msg">暂无记录，快来挑战吧！</div>
+            </div>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
