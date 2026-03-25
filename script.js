@@ -13,9 +13,9 @@ const saveNicknameBtn = document.getElementById("saveNicknameBtn");
 const shareBtn = document.getElementById("shareBtn");
 const refreshBoardBtn = document.getElementById("refreshBoardBtn");
 
-// 🏆 全网排行榜 API 端点 (切换至最稳定的 npoint.io)
-const API_ENDPOINT = "https://api.npoint.io/019d246b180578e6a5c7";
-const APP_VERSION = "v2026.03.25.Final"; // 最终版本标识
+// 🏆 全网排行榜 API 端点 (正确的 npoint.io 专属 ID)
+const API_ENDPOINT = "https://api.npoint.io/3039805fc7a1717aa687";
+const APP_VERSION = "v2026.03.25.npoint_fix"; // 最终版本标识
 
 // 获取或初始化昵称
 let FEISHU_USER_NAME = localStorage.getItem("snakeUserName");
