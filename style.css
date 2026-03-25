@@ -115,7 +115,14 @@ h1 {
     opacity: 0;
 }
 
+/* 弹窗层级调整 */
+#gameOverModal { z-index: 100; }
+#gachaModal { z-index: 110; }
+#collectionModal { z-index: 120; }
+#pokemonDetailModal { z-index: 130; }
+
 .modal-content {
+    position: relative;
     text-align: center;
     padding: 30px;
     background: var(--bg-card);
@@ -124,6 +131,72 @@ h1 {
     box-shadow: 0 0 30px rgba(46, 204, 113, 0.2);
 }
 
+/* 宝可梦详情弹窗样式 */
+.detail-content {
+    width: 280px;
+    background: #fff;
+    color: #333;
+    border: 4px solid var(--accent);
+}
+
+.detail-header img {
+    width: 120px;
+    height: 120px;
+    margin-bottom: 10px;
+}
+
+.detail-header h2 {
+    margin: 0;
+    font-size: 1.5rem;
+    color: #333;
+}
+
+.detail-body {
+    margin-top: 15px;
+    text-align: left;
+}
+
+.description {
+    font-size: 0.85rem;
+    line-height: 1.4;
+    color: #666;
+    margin-bottom: 15px;
+    padding: 10px;
+    background: #f8f9fa;
+    border-radius: 8px;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+}
+
+.stat-box {
+    background: #eee;
+    padding: 10px;
+    border-radius: 8px;
+    text-align: center;
+}
+
+.stat-label {
+    display: block;
+    font-size: 0.7rem;
+    color: #888;
+    text-transform: uppercase;
+}
+
+.stat-value {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: var(--secondary);
+}
+
+.detail-content .close-icon {
+    color: #999;
+}
+
+/* 抽卡样式 */
 .modal h2 {
     color: var(--primary);
     margin-bottom: 20px;
@@ -213,6 +286,33 @@ h1 {
     font-size: 1.2rem;
     margin: 0;
     color: var(--accent);
+}
+
+.leaderboard-tabs {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+    background: rgba(0, 0, 0, 0.2);
+    padding: 4px;
+    border-radius: 8px;
+}
+
+.tab-btn {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: var(--text-dim);
+    padding: 6px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    border-radius: 6px;
+    transition: all 0.3s;
+}
+
+.tab-btn.active {
+    background: var(--primary);
+    color: #1a1a2e;
+    font-weight: bold;
 }
 
 .sidebar-sub {
@@ -307,12 +407,213 @@ h1 {
     font-size: 0.9rem;
 }
 
+/* 抽卡样式 */
+.gacha-content {
+    width: 320px;
+    background: linear-gradient(135deg, #16213e 0%, #0f172a 100%);
+    border-color: var(--accent);
+}
+
+.card-display {
+    perspective: 1000px;
+    height: 240px;
+    margin: 20px 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.pokemon-card {
+    width: 180px;
+    height: 260px;
+    cursor: pointer;
+    transition: transform 0.6s;
+    transform-style: preserve-3d;
+}
+
+.pokemon-card.flipped {
+    transform: rotateY(180deg);
+}
+
+.card-inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    text-align: center;
+    transition: transform 0.6s;
+    transform-style: preserve-3d;
+}
+
+.card-front, .card-back {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    backface-visibility: hidden;
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    border: 3px solid var(--accent);
+    box-shadow: 0 0 20px rgba(241, 196, 15, 0.3);
+    padding: 10px;
+    box-sizing: border-box;
+}
+
+.card-back {
+    background: repeating-linear-gradient(45deg, #16213e, #16213e 10px, #1a1a2e 10px, #1a1a2e 20px);
+    font-size: 3rem;
+    color: var(--accent);
+    justify-content: center;
+}
+
+.card-front {
+    background: #fff;
+    color: #333;
+    transform: rotateY(180deg);
+}
+
+.card-front img {
+    width: 90px;
+    height: 90px;
+    object-fit: contain;
+    margin-top: 5px;
+}
+
+.card-info-container {
+    margin-top: auto;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding-bottom: 5px;
+}
+
+.card-front h3 {
+    margin: 0;
+    font-size: 1rem;
+    color: #333;
+}
+
+.card-desc-mini {
+    font-size: 0.65rem;
+    color: #666;
+    margin: 0;
+    line-height: 1.2;
+    text-align: center;
+    padding: 0 5px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.card-stats-mini {
+    display: flex;
+    gap: 15px;
+    font-size: 0.75rem;
+    font-weight: bold;
+    color: var(--secondary);
+    margin: 2px 0;
+}
+
+.type-badge {
+    background: #777;
+    color: white;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 0.6rem;
+}
+
+/* 图鉴样式 */
+.collection-content {
+    width: 360px;
+    max-height: 80vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.collection-header {
+    position: relative;
+    padding-bottom: 15px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.close-icon {
+    position: absolute;
+    right: -10px;
+    top: -10px;
+    background: none;
+    border: none;
+    color: var(--text-dim);
+    font-size: 1.5rem;
+    cursor: pointer;
+}
+
+.collection-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    padding: 15px 0;
+    overflow-y: auto;
+}
+
+.collection-item {
+    aspect-ratio: 1;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.collection-item.unlocked {
+    background: rgba(46, 204, 113, 0.1);
+    border-color: var(--primary);
+}
+
+.collection-item img {
+    width: 80%;
+    height: 80%;
+    filter: grayscale(1) brightness(0.5);
+}
+
+.collection-item.unlocked img {
+    filter: none;
+}
+
+.collection-item .id-badge {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    font-size: 0.6rem;
+    color: var(--text-dim);
+}
+
+.collection-entry-btn {
+    margin-top: 15px;
+    background: rgba(241, 196, 15, 0.1);
+    border: 1px solid var(--accent);
+    color: var(--accent);
+    padding: 8px 15px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    transition: all 0.2s;
+}
+
+.collection-entry-btn:hover {
+    background: var(--accent);
+    color: #000;
+}
+
 .controls-hint {
     margin-top: 20px;
     color: var(--text-dim);
     font-size: 0.9rem;
-}
-
-.controls-hint b {
-    color: var(--primary);
+    text-align: center;
 }

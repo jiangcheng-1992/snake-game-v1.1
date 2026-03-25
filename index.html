@@ -14,12 +14,16 @@
                 <h1>超级贪吃蛇</h1>
                 <div class="stats">
                     <div class="stat-item">
-                        <span class="label">分数</span>
-                        <span id="score" class="value">0</span>
+                        <span class="label">当前关卡</span>
+                        <span id="currentLevel" class="value">1</span>
                     </div>
                     <div class="stat-item">
-                        <span class="label">最高</span>
-                        <span id="highScore" class="value">0</span>
+                        <span class="label">累计总分</span>
+                        <span id="totalScore" class="value">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="label">本关分数</span>
+                        <span id="score" class="value">0</span>
                     </div>
                 </div>
             </div>
@@ -27,6 +31,78 @@
             <div class="canvas-container">
                 <canvas id="gameCanvas" width="400" height="400"></canvas>
                 
+                <!-- 抽卡弹窗 -->
+                <div id="gachaModal" class="modal hidden">
+                    <div class="modal-content gacha-content">
+                        <div class="gacha-header">
+                            <h2>🎊 恭喜过关！</h2>
+                            <p>你解锁了新的关卡，获得一次抽卡机会！</p>
+                        </div>
+                        <div class="card-display">
+                            <div id="newCard" class="pokemon-card hidden">
+                                <div class="card-inner">
+                                    <div class="card-front">
+                                        <img id="pokemonImg" src="" alt="Pokemon">
+                                        <div class="card-info-container">
+                                            <h3 id="pokemonName">???</h3>
+                                            <p id="pokemonDesc" class="card-desc-mini">???</p>
+                                            <div class="card-stats-mini">
+                                                <span>⚔️ <span id="pokemonAtk">0</span></span>
+                                                <span>🧠 <span id="pokemonInt">0</span></span>
+                                            </div>
+                                            <span id="pokemonType" class="type-badge">???</span>
+                                        </div>
+                                    </div>
+                                    <div class="card-back">？</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="gacha-actions">
+                            <button id="drawBtn" class="primary-btn">立即抽卡</button>
+                            <button id="closeGachaBtn" class="secondary-btn hidden">继续下一关</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 图鉴详情弹窗 -->
+                <div id="pokemonDetailModal" class="modal hidden">
+                    <div class="modal-content detail-content">
+                        <button class="close-icon" id="closeDetailBtn">×</button>
+                        <div class="detail-header">
+                            <img id="detailImg" src="" alt="Pokemon">
+                            <h2 id="detailName">???</h2>
+                            <span id="detailType" class="type-badge">???</span>
+                        </div>
+                        <div class="detail-body">
+                            <p id="detailDesc" class="description">加载中...</p>
+                            <div class="stats-grid">
+                                <div class="stat-box">
+                                    <span class="stat-label">攻击力</span>
+                                    <span id="detailAttack" class="stat-value">0</span>
+                                </div>
+                                <div class="stat-box">
+                                    <span class="stat-label">智力值</span>
+                                    <span id="detailInt" class="stat-value">0</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 图鉴弹窗 -->
+                <div id="collectionModal" class="modal hidden">
+                    <div class="modal-content collection-content">
+                        <div class="collection-header">
+                            <h2>🐾 宝可梦图鉴</h2>
+                            <p>已收集: <span id="collectionCount">0</span>/251</p>
+                            <button class="close-icon" id="closeCollectionBtn">×</button>
+                        </div>
+                        <div class="collection-grid" id="collectionGrid">
+                            <!-- 图鉴项动态生成 -->
+                        </div>
+                    </div>
+                </div>
+
                 <!-- 昵称设置弹窗 -->
                 <div id="nicknameModal" class="modal">
                     <div class="modal-content">
@@ -42,6 +118,7 @@
                 <!-- 游戏结束弹窗 -->
                 <div id="gameOverModal" class="modal hidden">
                     <div class="modal-content">
+                        <button class="close-icon" id="closeGameOverBtn">×</button>
                         <h2>游戏结束</h2>
                         <p>你的得分: <span id="finalScore">0</span></p>
                         <div class="user-info" id="userInfoDisplay">
@@ -57,6 +134,7 @@
 
             <div class="controls-hint">
                 <p>使用 <b>方向键</b> 或 <b>WASD</b> 控制移动</p>
+                <button id="openCollectionBtn" class="collection-entry-btn">🐾 查看已收集卡片</button>
             </div>
         </div>
 
@@ -64,6 +142,10 @@
         <div class="leaderboard-sidebar">
             <div class="sidebar-header">
                 <h2>🏆 全球排行榜</h2>
+                <div class="leaderboard-tabs">
+                    <button class="tab-btn active" id="tabScore">积分榜</button>
+                    <button class="tab-btn" id="tabCollection">收集榜</button>
+                </div>
                 <div class="sidebar-sub">
                     <span>全网实时同步</span>
                     <button id="refreshBoardBtn" title="刷新榜单">🔄</button>
