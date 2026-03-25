@@ -13,8 +13,8 @@ const saveNicknameBtn = document.getElementById("saveNicknameBtn");
 const shareBtn = document.getElementById("shareBtn");
 const refreshBoardBtn = document.getElementById("refreshBoardBtn");
 
-// 全网排行榜 API 端点 (全新的 JsonBlob)
-const API_ENDPOINT = "https://jsonblob.com/api/jsonBlob/019d2449-f292-7097-8a91-026570e860cf";
+// 全网排行榜 API 端点 (全新的 JsonBlob - 2026 最新版)
+const API_ENDPOINT = "https://jsonblob.com/api/jsonBlob/019d2462-4ddf-7198-92e7-34ad3f811a1f";
 
 // 获取或初始化昵称
 let FEISHU_USER_NAME = localStorage.getItem("snakeUserName");
@@ -79,7 +79,7 @@ function getAvatarColor(name) {
 
 // 从云端获取排行榜
 async function fetchLeaderboard() {
-    console.log("开始同步云端排行榜...");
+    console.log("正在尝试从全网拉取数据...");
     const originalHeader = document.querySelector('.sidebar-header h2');
     if (originalHeader) originalHeader.innerHTML = '🏆 同步中...';
     
@@ -87,22 +87,21 @@ async function fetchLeaderboard() {
         const response = await fetch(API_ENDPOINT, {
             method: 'GET',
             mode: 'cors',
+            cache: 'no-store', // 强制不走缓存
             headers: { 'Accept': 'application/json' }
         });
         
         if (response.ok) {
             const data = await response.json();
-            console.log("成功获取云端数据:", data);
             if (Array.isArray(data)) {
                 leaderboard = data;
                 localStorage.setItem("snakeLeaderboardBackup", JSON.stringify(data));
                 updateLeaderboardUI();
+                console.log("全网数据拉取成功!");
             }
-        } else {
-            console.error("云端获取失败, 状态码:", response.status);
         }
     } catch (e) {
-        console.error("网络请求异常:", e);
+        console.error("网络异常，无法访问全网排行榜:", e);
     } finally {
         if (originalHeader) originalHeader.innerHTML = '🏆 全球排行榜';
     }
@@ -247,19 +246,21 @@ function updateLocalLeaderboard(name, score) {
 }
 
 async function syncToCloud() {
-    // 增加获取超时处理
-    const getRes = await fetch(API_ENDPOINT, { 
-        method: 'GET', 
-        headers: { 'Accept': 'application/json' } 
-    });
-    if (getRes.ok) {
-        const cloudData = await getRes.json();
-        if (Array.isArray(cloudData)) {
-            mergeData(cloudData);
+    // 1. 提交前最后拉取一次最新云端，防止覆盖他人成绩
+    try {
+        const getRes = await fetch(API_ENDPOINT, { 
+            method: 'GET', 
+            mode: 'cors',
+            cache: 'no-store',
+            headers: { 'Accept': 'application/json' } 
+        });
+        if (getRes.ok) {
+            const cloudData = await getRes.json();
+            if (Array.isArray(cloudData)) mergeData(cloudData);
         }
-    }
+    } catch (e) {}
 
-    // 推送最终结果，带上完整的 Header
+    // 2. 将合并后的最终数据推送到云端
     const putRes = await fetch(API_ENDPOINT, {
         method: 'PUT',
         mode: 'cors',
@@ -270,9 +271,7 @@ async function syncToCloud() {
         body: JSON.stringify(leaderboard)
     });
     
-    if (!putRes.ok) {
-        throw new Error(`Cloud sync failed: ${putRes.status}`);
-    }
+    if (!putRes.ok) throw new Error(`HTTP ${putRes.status}`);
 }
 
 function mergeData(cloudData) {
