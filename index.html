@@ -64,11 +64,14 @@
         <div class="leaderboard-sidebar">
             <div class="sidebar-header">
                 <h2>🏆 全球排行榜</h2>
-                <p>(全网实时同步)</p>
+                <div class="sidebar-sub">
+                    <span>全网实时同步</span>
+                    <button id="refreshBoardBtn" title="刷新榜单">🔄</button>
+                </div>
             </div>
             <div class="leaderboard-list" id="leaderboardList">
                 <!-- 排行榜项将通过 JS 动态生成 -->
-                <div class="empty-msg">暂无记录，快来挑战吧！</div>
+                <div class="empty-msg">正在加载云端数据...</div>
             </div>
         </div>
     </div>
