@@ -13,14 +13,13 @@ const saveNicknameBtn = document.getElementById("saveNicknameBtn");
 const shareBtn = document.getElementById("shareBtn");
 const refreshBoardBtn = document.getElementById("refreshBoardBtn");
 
-// 🏆 全网排行榜 API 端点 (2026 最终稳定版)
-const API_ENDPOINT = "https://jsonblob.com/api/jsonBlob/019d246b-1805-78e6-a5c7-308b3dc3e5bb";
-const APP_VERSION = "v2026.03.25.01"; // 版本标识
+// 🏆 全网排行榜 API 端点 (切换至最稳定的 npoint.io)
+const API_ENDPOINT = "https://api.npoint.io/019d246b180578e6a5c7";
+const APP_VERSION = "v2026.03.25.Final"; // 最终版本标识
 
 // 获取或初始化昵称
 let FEISHU_USER_NAME = localStorage.getItem("snakeUserName");
 
-// 昵称弹窗逻辑
 if (FEISHU_USER_NAME) {
     nicknameModal.classList.add("hidden");
 }
@@ -54,18 +53,13 @@ let gameLoopTimeout;
 let gameActive = false;
 let changingDirection = false;
 
-// 初始化排行榜
 let leaderboard = [];
 
-// 从本地备份加载
 try {
     const backup = localStorage.getItem("snakeLeaderboardBackup");
-    if (backup) {
-        leaderboard = JSON.parse(backup);
-    }
+    if (backup) leaderboard = JSON.parse(backup);
 } catch (e) {}
 
-// 颜色生成函数 (为头像生成固定颜色)
 function getAvatarColor(name) {
     const colors = ["#2ecc71", "#3498db", "#9b59b6", "#f1c40f", "#e67e22", "#e74c3c", "#1abc9c"];
     let hash = 0;
@@ -75,44 +69,35 @@ function getAvatarColor(name) {
     return colors[Math.abs(hash) % colors.length];
 }
 
-// 从云端获取排行榜 (带强力缓存穿透)
 async function fetchLeaderboard() {
-    console.log(`[${APP_VERSION}] 正在拉取云端数据...`);
+    console.log(`[${APP_VERSION}] 正在同步全网排行...`);
     const originalHeader = document.querySelector('.sidebar-header h2');
     if (originalHeader) originalHeader.innerHTML = '🏆 同步中...';
     
     try {
-        const response = await fetch(`${API_ENDPOINT}?t=${Date.now()}`, {
-            method: 'GET',
-            mode: 'cors',
-            cache: 'no-store',
-            headers: { 'Accept': 'application/json' }
-        });
-        
+        const response = await fetch(API_ENDPOINT, { cache: 'no-store' });
         if (response.ok) {
             const data = await response.json();
             if (Array.isArray(data)) {
                 leaderboard = data;
                 localStorage.setItem("snakeLeaderboardBackup", JSON.stringify(data));
                 updateLeaderboardUI();
-                console.log("云端数据拉取成功!");
+                console.log("✅ 数据拉取成功");
             }
         }
     } catch (e) {
-        console.warn("网络拉取失败，使用本地缓存显示:", e);
+        console.warn("⚠️ 同步失败，显示本地数据");
     } finally {
         if (originalHeader) originalHeader.innerHTML = '🏆 全球排行榜';
     }
 }
 
-// 自动刷新逻辑
 setInterval(fetchLeaderboard, 60000);
 refreshBoardBtn.addEventListener("click", fetchLeaderboard);
 
-// 初始设置
 highScoreElement.textContent = highScore;
 updateLeaderboardUI();
-setTimeout(fetchLeaderboard, 500);
+setTimeout(fetchLeaderboard, 1000);
 
 async function initGame() {
     snake = [{ x: 10, y: 10 }, { x: 10, y: 11 }, { x: 10, y: 12 }];
@@ -202,9 +187,7 @@ async function endGame() {
     gameActive = false;
     finalScoreElement.textContent = score;
     gameOverModal.classList.remove("hidden");
-    
-    // 立即刷新本地 UI
-    userInfoDisplay.innerHTML = `玩家: <span id="feishuName">${FEISHU_USER_NAME}</span> (正在保存到本地...)`;
+    userInfoDisplay.innerHTML = `玩家: <span id="feishuName">${FEISHU_USER_NAME}</span> (正在本地保存...)`;
     
     if (score > 0) {
         updateLocalLeaderboard(FEISHU_USER_NAME, score);
@@ -213,10 +196,10 @@ async function endGame() {
         try {
             userInfoDisplay.innerHTML = `玩家: <span id="feishuName">${FEISHU_USER_NAME}</span> (正在全网同步...)`;
             await syncToCloud();
-            userInfoDisplay.innerHTML = `玩家: <span id="feishuName">${FEISHU_USER_NAME}</span> (同步成功 ✅)`;
+            userInfoDisplay.innerHTML = `玩家: <span id="feishuName">${FEISHU_USER_NAME}</span> (全网同步成功 ✅)`;
         } catch (e) {
             console.error("同步失败:", e);
-            userInfoDisplay.innerHTML = `玩家: <span id="feishuName">${FEISHU_USER_NAME}</span> (同步失败，已暂存本地)`;
+            userInfoDisplay.innerHTML = `玩家: <span id="feishuName">${FEISHU_USER_NAME}</span> (全网同步失败，已暂存本地)`;
         }
     } else {
         userInfoDisplay.innerHTML = `玩家: <span id="feishuName">${FEISHU_USER_NAME}</span> (再接再厉哦)`;
@@ -239,28 +222,21 @@ function updateLocalLeaderboard(name, score) {
 }
 
 async function syncToCloud() {
-    // 1. 获取最新云端数据 (加时间戳防止缓存)
-    const getRes = await fetch(`${API_ENDPOINT}?t=${Date.now()}`, { 
-        method: 'GET', 
-        headers: { 'Accept': 'application/json' } 
-    });
+    // 1. 获取最新云端
+    const getRes = await fetch(API_ENDPOINT);
     if (getRes.ok) {
         const cloudData = await getRes.json();
         if (Array.isArray(cloudData)) mergeData(cloudData);
     }
 
-    // 2. 推送
+    // 2. 推送更新
     const putRes = await fetch(API_ENDPOINT, {
-        method: 'PUT',
-        mode: 'cors',
-        headers: { 
-            'Content-Type': 'application/json',
-            'Accept': 'application/json'
-        },
+        method: 'POST', // npoint.io 使用 POST 更新数据
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(leaderboard)
     });
     
-    if (!putRes.ok) throw new Error("Sync failed");
+    if (!putRes.ok) throw new Error("npoint Sync failed");
 }
 
 function mergeData(cloudData) {
