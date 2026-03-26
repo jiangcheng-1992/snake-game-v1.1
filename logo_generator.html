@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>超级贪吃蛇 Logo 生成器</title>
+    <style>
+        body {
+            background: #1a1a2e;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            color: white;
+            font-family: sans-serif;
+        }
+        canvas {
+            background: #000;
+            border-radius: 20%;
+            box-shadow: 0 0 50px rgba(46, 204, 113, 0.5);
+            margin-bottom: 20px;
+        }
+        .controls {
+            text-align: center;
+        }
+        button {
+            background: #2ecc71;
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            font-weight: bold;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 15px #2ecc71;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="logoCanvas" width="512" height="512"></canvas>
+    <div class="controls">
+        <h2>超级贪吃蛇：宝可梦版 Logo</h2>
+        <p>右键点击上方图标并选择“图片另存为”即可保存</p>
+        <button onclick="downloadLogo()">点击直接下载 PNG</button>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('logoCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // 绘制逻辑
+        function drawLogo() {
+            // 1. 背景 (深色渐变)
+            const grad = ctx.createRadialGradient(256, 256, 100, 256, 256, 400);
+            grad.addColorStop(0, '#1a1a2e');
+            grad.addColorStop(1, '#000000');
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, 512, 512);
+
+            // 2. 霓虹圆环 (类似精灵球外框)
+            ctx.strokeStyle = '#2ecc71';
+            ctx.lineWidth = 12;
+            ctx.shadowBlur = 20;
+            ctx.shadowColor = '#2ecc71';
+            ctx.beginPath();
+            ctx.arc(256, 256, 220, 0, Math.PI * 2);
+            ctx.stroke();
+
+            // 3. 抽象的 S 型蛇 (带发光效果)
+            ctx.beginPath();
+            ctx.lineWidth = 50;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+            ctx.strokeStyle = '#2ecc71';
+            
+            // 绘制蛇身
+            ctx.moveTo(140, 160);
+            ctx.bezierCurveTo(450, 120, 60, 400, 360, 360);
+            ctx.stroke();
+
+            // 4. 蛇头 (带眼睛)
+            ctx.fillStyle = '#2ecc71';
+            ctx.beginPath();
+            ctx.arc(360, 360, 30, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // 蛇眼 (发光白)
+            ctx.fillStyle = '#fff';
+            ctx.shadowBlur = 10;
+            ctx.shadowColor = '#fff';
+            ctx.beginPath();
+            ctx.arc(370, 350, 6, 0, Math.PI * 2);
+            ctx.fill();
+
+            // 5. 核心：简化的精灵球符号 (位于中心)
+            ctx.shadowBlur = 15;
+            ctx.shadowColor = '#fff';
+            ctx.fillStyle = '#fff';
+            ctx.beginPath();
+            ctx.arc(256, 256, 70, 0, Math.PI * 2);
+            ctx.fill();
+
+            // 精灵球中间的横线
+            ctx.shadowBlur = 0;
+            ctx.fillStyle = '#000';
+            ctx.fillRect(186, 251, 140, 10);
+            
+            // 精灵球中心的按钮
+            ctx.strokeStyle = '#000';
+            ctx.lineWidth = 4;
+            ctx.fillStyle = '#fff';
+            ctx.beginPath();
+            ctx.arc(256, 256, 20, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+
+            // 6. 底部文字 (可选，为了作为图标，文字尽量小或不加)
+            ctx.shadowBlur = 10;
+            ctx.shadowColor = '#2ecc71';
+            ctx.fillStyle = '#2ecc71';
+            ctx.font = 'bold 40px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('SUPER SNAKE', 256, 485);
+        }
+
+        function downloadLogo() {
+            const link = document.createElement('a');
+            link.download = 'snake_logo.png';
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        }
+
+        drawLogo();
+    </script>
+</body>
+</html>

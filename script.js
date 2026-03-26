@@ -3,6 +3,7 @@ const ctx = canvas.getContext("2d");
 const scoreElement = document.getElementById("score");
 const finalScoreElement = document.getElementById("finalScore");
 const restartBtn = document.getElementById("restartBtn");
+const reviveBtn = document.getElementById("reviveBtn");
 const gameOverModal = document.getElementById("gameOverModal");
 const leaderboardList = document.getElementById("leaderboardList");
 const userInfoDisplay = document.getElementById("userInfoDisplay");
@@ -44,9 +45,47 @@ const detailInt = document.getElementById("detailInt");
 const closeDetailBtn = document.getElementById("closeDetailBtn");
 const closeGameOverBtn = document.getElementById("closeGameOverBtn");
 
+// 🎮 移动端控制按钮 DOM
+const btnUp = document.getElementById("btnUp");
+const btnDown = document.getElementById("btnDown");
+const btnLeft = document.getElementById("btnLeft");
+const btnRight = document.getElementById("btnRight");
+
+// 🎮 新增：皮卡丘宠物 DOM
+const petBubble = document.getElementById("petBubble");
+const pikachuPet = document.getElementById("pikachuPet");
+const attackersList = document.getElementById("attackersList");
+
 // 🏆 全网排行榜 API 端点 (正确的 npoint.io 专属 ID)
 const API_ENDPOINT = "https://api.npoint.io/3039805fc7a1717aa687";
-const APP_VERSION = "v2026.03.25.Gen2_Mode"; // 扩展至第二代
+const APP_VERSION = "v2026.03.25.Pet_Mode"; // 增加宠物模式版本
+
+// 💾 宠物互动台词 (毒舌版)
+const PET_QUOTES = {
+    start: ["哟，又来送人头了？", "皮卡...看你这操作我就心慌", "准备好刷新你的最低分了吗？", "去吧！菜鸟贪吃蛇！"],
+    eat: ["运气不错，这都能吃到？", "居然还没撞墙，奇迹啊", "呵，吃再多也掩盖不了技术菜", "别高兴太早，前面就是墙", "慢点吃，别噎着你的智商"],
+    levelUp: ["Wow! 瞎猫碰上死耗子了？", "这种难度也能升级？服了", "解锁新精灵也救不了你的手残", "行行行，算你厉害一次行了吧？"],
+    die: ["噗...我就知道会这样", "这操作，我奶奶上都比你强", "要不还是回家玩消消乐吧？", "菜是原罪，懂吗？Pika!", "求你了，别再折磨这条蛇了"]
+};
+
+function showPetTalk(type) {
+    const quotes = PET_QUOTES[type];
+    const randomQuote = quotes[Math.floor(Math.random() * quotes.length)];
+    petBubble.textContent = randomQuote;
+    petBubble.classList.add("show");
+    
+    // 增加一点点卖萌的缩放效果
+    pikachuPet.style.transform = "scale(1.2) rotate(10deg)";
+    
+    // 3秒后消失
+    setTimeout(() => {
+        petBubble.classList.remove("show");
+        pikachuPet.style.transform = "";
+    }, 3000);
+}
+
+// 给皮卡丘增加点击互动
+pikachuPet.addEventListener("click", () => showPetTalk('start'));
 
 // 💾 游戏数据
 let totalScore = parseInt(localStorage.getItem("snakeTotalScore")) || 0;
@@ -230,6 +269,7 @@ let score = 0;
 let highScore = localStorage.getItem("snakeHighScore") || 0;
 let gameLoopTimeout;
 let gameActive = false;
+let hasRevived = false;
 let changingDirection = false;
 let currentTab = 'score'; // 当前选中的排行榜标签
 
@@ -293,15 +333,18 @@ tabCollection.addEventListener("click", () => {
 currentLevelElement.textContent = currentLevel;
 totalScoreElement.textContent = totalScore;
 updateLeaderboardUI();
+updateTopAttackersUI();
 setTimeout(fetchLeaderboard, 1000);
 
 async function initGame() {
     snake = [{ x: 10, y: 10 }, { x: 10, y: 11 }, { x: 10, y: 12 }];
     dx = 0; dy = -1;
     score = 0;
+    hasRevived = false;
     scoreElement.textContent = score;
     gameActive = true;
     gameOverModal.classList.add("hidden");
+    showPetTalk('start'); // 游戏开始皮卡丘说话
     placeFood();
     clearTimeout(gameLoopTimeout);
     gameLoop();
@@ -332,12 +375,62 @@ function clearCanvas() { ctx.fillStyle = "#000000"; ctx.fillRect(0, 0, canvas.wi
 function drawSnake() {
     snake.forEach((part, index) => {
         const isHead = index === 0;
-        ctx.shadowBlur = isHead ? 15 : 5;
-        ctx.shadowColor = isHead ? "#2ecc71" : "#27ae60";
-        ctx.fillStyle = isHead ? "#2ecc71" : "#27ae60";
+        const isTail = index === snake.length - 1;
+        
+        // 大岩蛇的岩石灰色调
+        const rockColor = isHead ? "#95a5a6" : "#7f8c8d";
+        const shadowColor = isHead ? "#bdc3c7" : "#34495e";
+        
+        ctx.shadowBlur = isHead ? 10 : 4;
+        ctx.shadowColor = shadowColor;
+        ctx.fillStyle = rockColor;
+        
+        // 计算每一节的大小，使其产生从头到尾逐渐缩小的“岩石链”效果
+        const scale = isHead ? 1.1 : Math.max(0.6, 1 - (index / snake.length) * 0.4);
+        const size = (gridSize - 2) * scale;
+        const offset = (gridSize - size) / 2;
+
         ctx.beginPath();
-        ctx.roundRect(part.x * gridSize + 1, part.y * gridSize + 1, gridSize - 2, gridSize - 2, isHead ? 6 : 4);
+        // 使用圆角矩形模拟不规则岩石形状
+        ctx.roundRect(
+            part.x * gridSize + offset, 
+            part.y * gridSize + offset, 
+            size, 
+            size, 
+            isHead ? 8 : 6
+        );
         ctx.fill();
+        
+        // 给蛇头（大岩蛇）加上眼睛和独角特征
+        if (isHead) {
+            ctx.shadowBlur = 0;
+            // 眼睛
+            ctx.fillStyle = "white";
+            const eyeSize = 4;
+            // 根据移动方向调整眼睛位置
+            let eyeX1, eyeY1, eyeX2, eyeY2;
+            if (dx === 1) { // 向右
+                eyeX1 = eyeX2 = part.x * gridSize + gridSize - 8;
+                eyeY1 = part.y * gridSize + 6; eyeY2 = part.y * gridSize + gridSize - 10;
+            } else if (dx === -1) { // 向左
+                eyeX1 = eyeX2 = part.x * gridSize + 4;
+                eyeY1 = part.y * gridSize + 6; eyeY2 = part.y * gridSize + gridSize - 10;
+            } else if (dy === 1) { // 向下
+                eyeY1 = eyeY2 = part.y * gridSize + gridSize - 8;
+                eyeX1 = part.x * gridSize + 6; eyeX2 = part.x * gridSize + gridSize - 10;
+            } else { // 向上或初始
+                eyeY1 = eyeY2 = part.y * gridSize + 4;
+                eyeX1 = part.x * gridSize + 6; eyeX2 = part.x * gridSize + gridSize - 10;
+            }
+            ctx.beginPath(); ctx.arc(eyeX1 + eyeSize/2, eyeY1 + eyeSize/2, eyeSize/2, 0, Math.PI * 2); ctx.fill();
+            ctx.beginPath(); ctx.arc(eyeX2 + eyeSize/2, eyeY2 + eyeSize/2, eyeSize/2, 0, Math.PI * 2); ctx.fill();
+            
+            // 黑瞳孔
+            ctx.fillStyle = "black";
+            ctx.beginPath(); ctx.arc(eyeX1 + eyeSize/2, eyeY1 + eyeSize/2, 1, 0, Math.PI * 2); ctx.fill();
+            ctx.beginPath(); ctx.arc(eyeX2 + eyeSize/2, eyeY2 + eyeSize/2, 1, 0, Math.PI * 2); ctx.fill();
+        }
+
         ctx.shadowBlur = 0;
     });
 }
@@ -353,6 +446,8 @@ function moveSnake() {
         totalScoreElement.textContent = totalScore;
         localStorage.setItem("snakeTotalScore", totalScore);
 
+        if (score % 30 === 0) showPetTalk('eat'); // 偶尔吃果子说话
+        
         // 检查是否达到关卡目标
         if (score >= getLevelTarget(currentLevel)) {
             levelUp();
@@ -374,6 +469,7 @@ function levelUp() {
     // 获得一次抽卡机会
     pendingDraws++;
     localStorage.setItem("snakePendingDraws", pendingDraws);
+    showPetTalk('levelUp'); // 升级说话
     
     // 暂停游戏，弹出抽卡界面
     gameActive = false;
@@ -413,6 +509,7 @@ drawBtn.addEventListener("click", () => {
         if (!myCollection.includes(pokemon.id)) {
             myCollection.push(pokemon.id);
             localStorage.setItem("snakeCollection", JSON.stringify(myCollection));
+            updateTopAttackersUI(); // 更新战力前三展示
         }
         
         pendingDraws--;
@@ -436,6 +533,34 @@ closeGameOverBtn.addEventListener("click", () => gameOverModal.classList.add("hi
 closeDetailBtn.addEventListener("click", () => pokemonDetailModal.classList.add("hidden"));
 
 // --- 图鉴逻辑 ---
+function updateTopAttackersUI() {
+    if (myCollection.length === 0) {
+        attackersList.innerHTML = '<div class="empty-attacker">暂无强力精灵</div>';
+        return;
+    }
+
+    // 获取已收集精灵的完整数据
+    const collectedData = myCollection.map(id => POKEMON_DATA.find(p => p.id === id)).filter(Boolean);
+    
+    // 按攻击力排序
+    const sorted = collectedData.sort((a, b) => b.atk - a.atk).slice(0, 3);
+
+    attackersList.innerHTML = "";
+    sorted.forEach((p, index) => {
+        const item = document.createElement("div");
+        item.className = "attacker-item";
+        item.title = `${p.name} - 攻击力: ${p.atk}`;
+        item.onclick = () => showPokemonDetail(p.id);
+
+        item.innerHTML = `
+            <span class="attacker-rank">${index + 1}</span>
+            <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/${p.id}.gif" class="attacker-img" alt="${p.name}">
+            <span class="attacker-atk">⚔️ ${p.atk}</span>
+        `;
+        attackersList.appendChild(item);
+    });
+}
+
 function updateCollectionUI() {
     collectionGrid.innerHTML = "";
     collectionCountElement.textContent = myCollection.length;
@@ -504,7 +629,15 @@ function hasGameEnded() {
 async function endGame() {
     gameActive = false;
     finalScoreElement.textContent = score;
+    
+    if (!hasRevived) {
+        reviveBtn.style.display = "inline-block";
+    } else {
+        reviveBtn.style.display = "none";
+    }
+    
     gameOverModal.classList.remove("hidden");
+    showPetTalk('die'); // 死亡说话
     userInfoDisplay.innerHTML = `玩家: <span id="feishuName">${FEISHU_USER_NAME}</span> (正在本地保存...)`;
     
     // 无论分数是否为 0，都尝试同步一次（因为可能有新的收集）
@@ -627,7 +760,63 @@ function changeDirection(event) {
 }
 
 document.addEventListener("keydown", changeDirection);
+
+// 移动端控制
+btnUp.addEventListener("click", () => handleMobileClick('UP'));
+btnDown.addEventListener("click", () => handleMobileClick('DOWN'));
+btnLeft.addEventListener("click", () => handleMobileClick('LEFT'));
+btnRight.addEventListener("click", () => handleMobileClick('RIGHT'));
+
+function handleMobileClick(dir) {
+    if (!gameActive && gameOverModal.classList.contains("hidden") && nicknameModal.classList.contains("hidden")) {
+        initGame();
+        return;
+    }
+    // 如果游戏未激活且不是在暂停等待复活的状态，则不响应方向键
+    if (!gameActive) return;
+    
+    const KEYS = { LEFT: 37, UP: 38, RIGHT: 39, DOWN: 40 };
+    changeDirection({ keyCode: KEYS[dir], preventDefault: () => {} });
+}
+
+// 阻止移动端浏览器默认滚动（在 Canvas 区域）
+canvas.addEventListener("touchstart", (e) => e.preventDefault(), { passive: false });
+canvas.addEventListener("touchmove", (e) => e.preventDefault(), { passive: false });
 restartBtn.addEventListener("click", initGame);
+
+reviveBtn.addEventListener("click", () => {
+    // 模拟观看广告
+    const confirmWatch = confirm("观看穿山甲激励视频广告即可原地复活，是否观看？");
+    if (confirmWatch) {
+        alert("模拟播放穿山甲激励视频广告中...\n\n播放完毕！感谢观看，获得一次复活机会！");
+        
+        hasRevived = true;
+        gameOverModal.classList.add("hidden");
+        
+        // 原地复活逻辑：
+        // 1. 移除当前撞击死亡的蛇头，后退一步
+        snake.shift();
+        
+        // 如果蛇已经没有身体了（比如长度很短的情况），给一个默认安全的蛇头
+        if (snake.length === 0) {
+            snake = [{ x: Math.floor(tileCount / 2), y: Math.floor(tileCount / 2) }];
+        }
+        
+        // 2. 清除当前运动方向，等待玩家重新输入方向（游戏暂停状态）
+        dx = 0; dy = 0; 
+        
+        gameActive = true;
+        
+        // 宠物鼓励
+        petBubble.textContent = "Pika! 满血复活，别再死了！";
+        petBubble.classList.add("show");
+        setTimeout(() => petBubble.classList.remove("show"), 3000);
+        
+        clearTimeout(gameLoopTimeout);
+        gameLoop();
+    }
+});
+
 shareBtn.addEventListener("click", () => {
     navigator.clipboard.writeText(window.location.href).then(() => {
         const old = shareBtn.textContent; shareBtn.textContent = "✅ 已复制";

@@ -22,17 +22,218 @@ body {
     overflow-x: hidden;
 }
 
+/* 互动宠物样式 */
+.pet-sidebar {
+    width: 120px; /* 稍微加宽，以容纳战力榜 */
+    display: flex;
+    flex-direction: column; /* 垂直排列皮卡丘和战力榜 */
+    justify-content: flex-start;
+    align-items: center;
+    position: relative;
+    padding-top: 80px; /* 向上提一点，留出下方空间 */
+    gap: 80px; /* 增加皮卡丘和战力榜之间的间距 */
+}
+
+.pikachu-container {
+    position: relative;
+    right: -20px; /* 调整偏移量，配合加宽的侧边栏 */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    animation: float 3s ease-in-out infinite, actCute 6s ease-in-out infinite;
+    transform-style: preserve-3d;
+    perspective: 500px;
+    cursor: pointer;
+}
+
+/* 战力榜样式 */
+.top-attackers-container {
+    width: 120px;
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(46, 204, 113, 0.3);
+    border-radius: 15px;
+    padding: 20px 5px;
+    text-align: center;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(5px);
+    right: -25px;
+    position: relative;
+}
+
+.attackers-title {
+    font-size: 0.9rem;
+    color: var(--primary);
+    margin-bottom: 30px; /* 增加标题和列表的间距 */
+    font-weight: bold;
+    text-shadow: 0 0 5px var(--primary);
+}
+
+.attackers-list {
+    display: flex;
+    flex-direction: column;
+    gap: 45px; /* 大幅增加战力项之间的垂直间距 */
+    align-items: center;
+}
+
+.attacker-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    transform-style: preserve-3d;
+    perspective: 500px;
+}
+
+.attacker-item:hover {
+    transform: scale(1.15) translateZ(30px);
+}
+
+/* 移除导致拥挤的自定义提示框，改用原生 title 提示 */
+.attacker-item::after {
+    display: none;
+}
+
+.attacker-img {
+    width: 55px; /* 稍微调小一点，腾出间距空间 */
+    height: 55px;
+    filter: drop-shadow(0 0 8px rgba(231, 76, 60, 0.3));
+    animation: attackerFloat 3s ease-in-out infinite;
+    transform: translateZ(20px);
+    image-rendering: pixelated; /* 像素动画更清晰 */
+}
+
+.attacker-rank {
+    position: absolute;
+    top: -5px;
+    left: -5px;
+    background: var(--primary);
+    color: #000;
+    font-size: 0.6rem;
+    width: 15px;
+    height: 15px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+}
+
+.attacker-atk {
+    font-size: 0.75rem;
+    color: #e74c3c;
+    margin-top: 8px; /* 增加与精灵图的间距 */
+    font-weight: bold;
+}
+
+@keyframes attackerFloat {
+    0%, 100% { transform: translateY(0) rotate(2deg); }
+    50% { transform: translateY(-5px) rotate(-2deg); }
+}
+
+.empty-attacker {
+    font-size: 0.7rem;
+    color: #666;
+    padding: 10px 0;
+}
+
+.pikachu-img {
+    width: 110px; /* 稍微缩小一点皮卡丘，匹配缩小的画布 */
+    height: 110px;
+    image-rendering: auto;
+    filter: drop-shadow(0 0 15px rgba(241, 196, 15, 0.4));
+    transform: translateZ(20px);
+    transition: transform 0.3s;
+}
+
+.pikachu-container:hover .pikachu-img {
+    transform: translateZ(40px) scale(1.1);
+}
+
+.pet-shadow {
+    width: 50px;
+    height: 8px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 50%;
+    margin-top: 8px;
+    filter: blur(4px);
+    animation: shadowScale 3s ease-in-out infinite;
+}
+
+.pet-bubble {
+    position: absolute;
+    top: -55px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #fff;
+    color: #333;
+    padding: 6px 12px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: bold;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    white-space: nowrap;
+    opacity: 0;
+    transition: all 0.3s;
+    pointer-events: none;
+    z-index: 10;
+}
+
+.pet-bubble::after {
+    content: '';
+    position: absolute;
+    bottom: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+    border-left: 8px solid transparent;
+    border-right: 8px solid transparent;
+    border-top: 8px solid #fff;
+}
+
+.pet-bubble.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(-10px);
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-15px); }
+}
+
+@keyframes actCute {
+    0%, 100% { transform: rotate(0deg); }
+    20% { transform: rotate(-10deg) scale(1.05); }
+    40% { transform: rotate(10deg) scale(1.05); }
+    60% { transform: rotate(-5deg) scale(1.1); }
+    80% { transform: rotate(5deg) scale(1.05); }
+}
+
+@keyframes shadowScale {
+    0%, 100% { transform: scale(1); opacity: 0.3; }
+    50% { transform: scale(0.7); opacity: 0.1; }
+}
+
+/* 响应式媒体查询（移动端隐藏宠物） */
+@media (max-width: 900px) {
+    .pet-sidebar {
+        display: none;
+    }
+}
+
 .main-layout {
     display: flex;
-    gap: 30px;
-    padding: 20px;
-    max-width: 900px;
+    gap: 30px; /* 间隙适中 */
+    padding: 30px 20px 50px; /* 减少上下留白，确保一屏显示 */
+    max-width: 1200px;
     width: 100%;
+    justify-content: center;
+    align-items: flex-start;
 }
 
 /* 游戏主体区域 */
 .game-wrapper {
-    flex: 1;
+    flex: 0 0 650px; /* 再次增加容器宽度，给超大标题留出空间 */
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -40,30 +241,33 @@ body {
 
 .game-header {
     width: 100%;
-    margin-bottom: 20px;
+    margin-bottom: 25px;
     display: flex;
     justify-content: space-between;
     align-items: center;
+    flex-wrap: nowrap;
 }
 
 h1 {
-    font-size: 2rem;
+    font-size: 3rem; /* 标题进一步改大，尽显霸气 */
     color: var(--primary);
-    text-shadow: 0 0 10px rgba(46, 204, 113, 0.5);
+    text-shadow: 0 0 20px rgba(46, 204, 113, 0.7); /* 进一步增强霓虹发光感 */
     margin: 0;
+    white-space: nowrap;
 }
 
 .stats {
     display: flex;
-    gap: 20px;
+    gap: 10px; /* 减小各项之间的间距 */
 }
 
 .stat-item {
     background: var(--bg-card);
-    padding: 10px 20px;
+    padding: 5px 12px; /* 减小内边距 */
     border-radius: 8px;
     text-align: center;
     border: 1px solid rgba(255, 255, 255, 0.1);
+    min-width: 70px; /* 设定最小宽度保证对齐 */
 }
 
 .stat-item .label {
@@ -240,6 +444,23 @@ h1 {
     border-radius: 5px;
     cursor: pointer;
     transition: all 0.2s;
+}
+
+.revive-btn {
+    background: linear-gradient(135deg, #f39c12, #e67e22);
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    font-weight: bold;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 0 10px rgba(243, 156, 18, 0.5);
+}
+
+.revive-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 15px rgba(243, 156, 18, 0.8);
 }
 
 .secondary-btn {
@@ -609,6 +830,86 @@ h1 {
 .collection-entry-btn:hover {
     background: var(--accent);
     color: #000;
+}
+
+/* 移动端控制按钮 */
+.mobile-controls {
+    display: none; /* 默认在 PC 隐藏 */
+    flex-direction: column;
+    align-items: center;
+    margin-top: 20px;
+    gap: 10px;
+}
+
+.control-row {
+    display: flex;
+    gap: 15px;
+}
+
+.control-btn {
+    width: 60px;
+    height: 60px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 2px solid var(--primary);
+    border-radius: 50%;
+    color: var(--primary);
+    font-size: 1.5rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    touch-action: manipulation;
+    user-select: none;
+    transition: all 0.1s;
+}
+
+.control-btn:active {
+    background: var(--primary);
+    color: #000;
+    transform: scale(0.9);
+}
+
+/* 响应式媒体查询 */
+@media (max-width: 900px) {
+    .main-layout {
+        flex-direction: column;
+        padding: 10px;
+        height: auto;
+    }
+
+    .game-wrapper {
+        width: 100%;
+        max-width: 400px;
+    }
+
+    .leaderboard-sidebar {
+        width: 100%;
+        max-width: 400px;
+        height: auto;
+        min-height: 400px;
+    }
+
+    canvas {
+        width: 100%;
+        height: auto;
+        max-width: 400px;
+    }
+
+    .mobile-controls {
+        display: flex;
+    }
+
+    .pc-hint {
+        display: none;
+    }
+
+    .modal-content {
+        width: 90% !important;
+        padding: 20px;
+    }
+
+    .collection-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
 }
 
 .controls-hint {

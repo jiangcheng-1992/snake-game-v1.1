@@ -2,12 +2,30 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>超级贪吃蛇 - 极简版</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>超级贪吃蛇 - 宝可梦收集版</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="main-layout">
+        <!-- 互动宠物 -->
+        <div class="pet-sidebar">
+            <div id="pikachuPet" class="pikachu-container">
+                <div id="petBubble" class="pet-bubble hidden">Pika!</div>
+                <img src="https://play.pokemonshowdown.com/sprites/ani/pikachu.gif" alt="Pikachu" class="pikachu-img">
+                <div class="pet-shadow"></div>
+            </div>
+
+            <!-- 新增：战力榜前三展示 -->
+            <div id="topAttackers" class="top-attackers-container">
+                <div class="attackers-title">🏆 战力排行</div>
+                <div id="attackersList" class="attackers-list">
+                    <!-- JS 动态注入 -->
+                    <div class="empty-attacker">暂无强力精灵</div>
+                </div>
+            </div>
+        </div>
+
         <!-- 游戏区域 -->
         <div class="game-wrapper">
             <div class="game-header">
@@ -125,6 +143,7 @@
                             正在同步飞书账号...
                         </div>
                         <div class="modal-actions">
+                            <button id="reviveBtn" class="revive-btn" style="display: none;">📺 看广告复活</button>
                             <button id="restartBtn" class="primary-btn">重新开始</button>
                             <button id="shareBtn" class="secondary-btn">分享游戏</button>
                         </div>
@@ -133,8 +152,20 @@
             </div>
 
             <div class="controls-hint">
-                <p>使用 <b>方向键</b> 或 <b>WASD</b> 控制移动</p>
+                <p class="pc-hint">使用 <b>方向键</b> 或 <b>WASD</b> 控制移动</p>
                 <button id="openCollectionBtn" class="collection-entry-btn">🐾 查看已收集卡片</button>
+            </div>
+
+            <!-- 移动端虚拟按键 -->
+            <div class="mobile-controls">
+                <div class="control-row">
+                    <button id="btnUp" class="control-btn">▲</button>
+                </div>
+                <div class="control-row">
+                    <button id="btnLeft" class="control-btn">◀</button>
+                    <button id="btnDown" class="control-btn">▼</button>
+                    <button id="btnRight" class="control-btn">▶</button>
+                </div>
             </div>
         </div>
 
